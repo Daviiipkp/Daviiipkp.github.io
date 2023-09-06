@@ -1,9 +1,9 @@
 function mudarTexto() {
     var elemento = document.querySelector('.title-text');
-    elemento.textContent = "Harly Lindo <3";
+    elemento.textContent = "aula do meu professor favorito :P";
   }
 
   function mudarTexto2() {
     var elemento = document.querySelector('.title-text');
-    elemento.textContent = "Portfólio Projeto de Vida";
+    elemento.textContent = "(mentira, prefiro harly)";
   }
