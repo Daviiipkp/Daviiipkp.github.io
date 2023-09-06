@@ -82,7 +82,7 @@
     justify-content: center;
     margin-right: 50px;
     border-radius: 5px;
-
+    display: inline-block;
     transition-property: min-width, min-height, box-shadow;
     transition-duration: 0.3s;
 
