@@ -18,7 +18,7 @@
     min-width: 90vw;
     min-height: 90vh;
     height: 90vh;
-    width: 90w;
+    width: 90vw;
     max-width: 90vw;
     max-height: 90vh;
     background-image: none;
@@ -71,6 +71,7 @@
     display: inline-block;
     margin: 50px;
     margin-top: 100px;
+    
 }
 
 .content1 {
