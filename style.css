@@ -1,171 +1,42 @@
-html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-    background-image: url("background.png");
-    background-repeat: repeat; /* Isso faz a imagem se repetir tanto na horizontal quanto na vertical */
-}
-
-.container {
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    padding: 0;
-
-    user-select: none;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.scrollable {
-    min-width: 90%;
-    min-height: 90%;
-    height: 90%;
-    width: 90%;
-    max-width: 90%;
-    max-height: 90%;
-    background-image: none;
-    background-color: bisque;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); /* Sombra personalizada */
-    border-radius: 10px;
-    justify-content: center;
-}
-
-.title{
-    color: #333;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-    background-color: #f9f9f9;
-    border-radius: 5px;
-    align-items: center;
-    display: flex;
-    justify-content: center;
-}
-
-.title-texts {
-    display: block;
-    justify-content: center;
-}
-
-.title-text {
-    font-family: 'Arial', sans-serif;
-    font-size: 36px;
-    font-weight: bold;
-    text-transform: uppercase;
-    color: #333;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-    text-align: center;
-    line-height: 10px;
-}
-
-#title-text:hover {
-    color: gold;
-    transition-duration: 0.3s;
-}
-
-#author-name {
-    font-family: monospace;
-    font-size: 24px;
-    color: #888;
-    text-align: center;
-    line-height: 10px;
-  }
-
-.sc-content {
-    display: inline-block;
-    margin: 50px;
-    margin-top: 100px;
-    
-}
-
-.content1 {
-    min-width: 10vw;
-    min-height: 16vh;
-    background-color: #f9f9f9;
-    box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3);
-    align-items: center;
-    justify-content: center;
-    margin-right: 50px;
-    border-radius: 5px;
-    display: inline-block;
-    transition-property: min-width, min-height, box-shadow;
-    transition-duration: 0.3s;
-
-}
-
-.content2 {
-    min-width: 36vw;
-    min-height: 50vh;
-    background-color: #f9f9f9;
-    box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3);
-    align-items: center;
-    justify-content: center;
-    display: flex;
-    flex-direction: column;
-    margin-left: 50px;
-    border-radius: 5px;
-
-    transition-property: min-width, min-height, box-shadow;
-    transition-duration: 0.3s;
-
-}
-
-#description {
-    font-size: 1.2rem;
-    font-weight: bold;
-    text-transform: uppercase;
-    color: #333;
-    border-bottom: 2px solid #333;
-    padding-bottom: 8px;
-    margin-bottom: 16px;
-    cursor: pointer;
-  }
-
-.content1:hover{
-    box-shadow: 0px 0px 16px rgba(0, 0, 0, 0.3);
-    transition-duration: 0.3s;
-}
-
-.content2:hover{
-    box-shadow: 0px 0px 16px rgba(0, 0, 0, 0.3);
-    min-width: 40vw;
-    min-height: 54vh;
-    transition-duration: 0.3s;
-}
-
-.mic {
-    border-radius: 50%;
-    width: 15vw;
-    height: auto;
-}
-
-.mic2 {
-    border-radius: 50%;
-    width: 15vw;
-    height: auto;
-}
-
+/* Reset CSS padrão */
 body, html {
     margin: 0;
     padding: 0;
-    height: 100%;
+    font-family: Arial, sans-serif;
+    background-image: url("background.png");
+    background-repeat: repeat;
 }
 
-.home-link {
-    color: #000;
-    text-decoration: none;
+/* Estilos para o conteúdo */
+.container {
+    max-width: 800px;
+    margin: 25px auto;
+    padding: 35px;
+    background-color: bisque;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    text-align: left;
 }
-  
-.home-link:hover {
-    color: #fff;
-    transition-duration: 0.1s;
+
+.lesson-title {
+    color: #333;
 }
-  
-.home-link i {
-    font-size: 20px;
-    margin-right: 5px;
+
+.author-name {
+    color: #555;
+    font-style: italic;
+}
+
+.lesson-section {
+    margin-top: 20px;
+}
+
+.section-title {
+    font-size: 18px;
+    color: #333;
+}
+
+ul {
+    list-style: disc;
+    margin-left: 20px;
 }
