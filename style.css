@@ -1,7 +1,15 @@
-.container {
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
     background-image: url("background.png");
-    background-size: cover;
-    background-position: center;
+    background-repeat: repeat; /* Isso faz a imagem se repetir tanto na horizontal quanto na vertical */
+}
+
+.container {
     width: 100%;
     height: 100%;
     margin: 0;
