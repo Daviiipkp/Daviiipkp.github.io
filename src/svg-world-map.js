@@ -552,6 +552,7 @@ var svgWorldMap = (function() {
 
     // Click function for calling home from the outside, defined in 'svgMap.click' 
     window.countryClick = function(id) {
+        console.log('DEBUG!!!!!!!!!!!!');
         var country = countries[id]; 
         var selectedOld = selectedCountry;
         // Set new selected
