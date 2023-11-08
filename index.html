@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+        <title>SVG World Map Demo</title>
+        <style>body { margin: 0; overflow: hidden; }</style>
+	</head>
+	<body>
+        <script src="../src/svg-world-map.js"></script>
+        <script>
+            // Set options 
+            var myCustomOptions = { 
+                // Basic options
+                bigMap: false, // Set to 'false' to load small map without provinces
+                showOcean: true, // Show or hide ocean layer
+                showAntarctica: true, // Show or hide antarctic layer
+                showLabels: true, // Show country labels
+                showMicroLabels: false, // Show microstate labels
+                showMicroStates: true, // Show microstates on map
+                showInfoBox: true, // Show info box
+                backgroundImage: '', // Background image path
+                // Color options
+                oceanColor: '#D8EBFF', 
+                worldColor: '#FFFFFF', 
+                provinceFill: { out: '#20df43',  over: '#00FF00',  click: '#FFFF00' }, 
+                provinceStroke: { out: '#000000',  over: '#FF0000',  click: '#FFFFFF' }, 
+                provinceStrokeWidth: { out: 0.5,  over: 1,  click: 0 }, 
+                labelFill: { out: '#006600',  over: '#FF0000',  click: '#000000' },
+                // Group options
+                groupCountries: true, // Enable or disable country grouping
+                groupBy: [ "region" ], // Sort countryData by this value(s) and return to countryGroups
+                // Coordinates
+ 
+            };
+            
+            // Load SVG World Map
+            svgWorldMap(myCustomOptions);
+
+        </script>
+    </body>
+</html>
