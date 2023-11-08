@@ -568,6 +568,30 @@ var svgWorldMap = (function() {
         selectedCountry = country; // New selected
         resetOldSelected(selectedOld); // Reset selectedOld
         callBack('click', country);
+        // Criando uma div para a janela transparente
+        const transparentWindow = document.createElement('div');
+        
+        // Definindo estilos para a janela transparente
+        transparentWindow.style.position = 'fixed';
+        transparentWindow.style.top = '50%';
+        transparentWindow.style.left = '50%';
+        transparentWindow.style.transform = 'translate(-50%, -50%)';
+        transparentWindow.style.width = '30%';
+        transparentWindow.style.height = '30%';
+        transparentWindow.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
+        transparentWindow.style.border = '1px solid black';
+        transparentWindow.style.borderRadius = '5px';
+        transparentWindow.style.padding = '20px';
+        transparentWindow.style.boxSizing = 'border-box';
+        transparentWindow.style.overflow = 'auto';
+        
+        // Adicionando texto à janela
+        const textElement = document.createElement('p');
+        textElement.textContent = 'Texto de exemplo na janela transparente.';
+        transparentWindow.appendChild(textElement);
+        
+        // Adicionando a janela à body
+        document.body.appendChild(transparentWindow);
     }
 
     // Reset all colors and fills, function defined in 'svgMap.resetMap' 
