@@ -72,7 +72,6 @@ var svgWorldMap = (function() {
 
     // Main function: SVG map init call, options handling, return the map object
     async function svgWorldMap(initOptions, initCountryData, initTimeData) {
-        console.log('started!');
         let promise1 = new Promise(resolve1 => {
             // Check size, viewport and mobile
             checkSize();
@@ -392,6 +391,10 @@ var svgWorldMap = (function() {
         // Add event listener and set display to none at start
         infoBox.style.display = 'none';
         baseNode.addEventListener("mousemove", function(event) {
+            var x = event.clientX;
+            var y = event.clientY;
+            tooltip.style.top = (y + 20) + 'px'; // ajuste de 20 pixels para a distância vertical
+            tooltip.style.left = (x + 20) + 'px'; // ajuste de 20 pixels para a distância horizontal
             if (infoBox.style.display != 'none') {
                 infoBox.style.left = (event.clientX - (infoBox.offsetWidth / 2)) + 'px';
                 if (event.clientY < (infoBox.offsetHeight + 25)) {
@@ -453,6 +456,10 @@ var svgWorldMap = (function() {
         // Add base point and event listener for coords
         basePoint = baseNode.createSVGPoint(); 
         baseNode.addEventListener("mousemove", function(event) { 
+            var x = event.clientX;
+            var y = event.clientY;
+            tooltip.style.top = (y + 20) + 'px'; // ajuste de 20 pixels para a distância vertical
+            tooltip.style.left = (x + 20) + 'px'; // ajuste de 20 pixels para a distância horizontal
             basePoint.x = event.clientX;
             basePoint.y = event.clientY;
             // Translate cursor point to svg coordinates
@@ -516,44 +523,77 @@ var svgWorldMap = (function() {
 
     // Hover over function for calling home from the outside, defined in 'svgMap.over' 
     // TODO: Optimize / refactor with window.countryOut
+    var tooltip = document.createElement('div');
+    tooltip.setAttribute('id', 'tooltip');
+    tooltip.style.position = 'absolute';
+    tooltip.style.background = 'rgba(0, 0, 0, 0.7)';
+    tooltip.style.color = '#fff';
+    tooltip.style.padding = '5px';
+    tooltip.style.borderRadius = '5px';
+    tooltip.style.pointerEvents = 'none';
+    tooltip.style.display = 'none';
+    document.body.appendChild(tooltip);
+
+
     window.countryOver = function(id) {
-        var country = countries[id]; 
+        var country = countries[id];
         if (country != undefined && country != selectedCountry) {
-            country.provinces.forEach(function(province) { 
-                pathSetAttributes(province, 'over'); 
-                if (province.provinces != undefined) { province.provinces.forEach(function(subprovince) { pathSetAttributes(subprovince, 'over') }); } 
-            }); 
+            country.provinces.forEach(function(province) {
+                pathSetAttributes(province, 'over');
+                if (province.provinces != undefined) {
+                    province.provinces.forEach(function(subprovince) {
+                        pathSetAttributes(subprovince, 'over');
+                    });
+                }
+            });
             setLabelFill(id, 'over');
+
+            var tooltipText = "População: " + countryData[id].population + "\nPIB: " + countryData[id].GDP + "\nRegião: " + countryData[id].region + ((countryData[id].altnames==undefined||countryData[id].altnames==null)?"":("\nNomes alternativos: " + countryData[id].altnames));
+            tooltip.style.display = 'block';
+            tooltip.innerText = tooltipText;
         } else {
             province = findProvinceById(id);
             if (province != undefined) {
                 pathSetAttributes(province, 'over');
-                if (province.provinces != undefined) { province.provinces.forEach(function(subprovince) { pathSetAttributes(subprovince, 'over') }); } 
+                if (province.provinces != undefined) {
+                    province.provinces.forEach(function(subprovince) {
+                        pathSetAttributes(subprovince, 'over');
+                    });
+                }
             }
         }
-    }
+    };
 
-    // Hover out function for calling home from the outside, defined in 'svgMap.out' 
     window.countryOut = function(id) {
-        var country = countries[id]; 
+        var country = countries[id];
         if (country != undefined && country != selectedCountry) {
-            country.provinces.forEach(function(province) { 
-                pathSetAttributes(province, 'out'); 
-                if (province.provinces != undefined) { province.provinces.forEach(function(subprovince) { pathSetAttributes(subprovince, 'out') }); } 
-            }); 
+            country.provinces.forEach(function(province) {
+                pathSetAttributes(province, 'out');
+                if (province.provinces != undefined) {
+                    province.provinces.forEach(function(subprovince) {
+                        pathSetAttributes(subprovince, 'out');
+                    });
+                }
+            });
             setLabelFill(id, 'out');
+            tooltip.style.display = 'none';
         } else {
             province = findProvinceById(id);
             if (province != undefined) {
                 pathSetAttributes(province, 'out');
-                if (province.provinces != undefined) { province.provinces.forEach(function(subprovince) { pathSetAttributes(subprovince, 'out') }); } 
+                if (province.provinces != undefined) {
+                    province.provinces.forEach(function(subprovince) {
+                        pathSetAttributes(subprovince, 'out');
+                    });
+                }
             }
         }
-    }
+    };
+
+
 
     // Click function for calling home from the outside, defined in 'svgMap.click' 
     window.countryClick = function(id) {
-        console.log('DEBUG!!!!!!!!!!!!');
         var country = countries[id]; 
         var selectedOld = selectedCountry;
         // Set new selected
@@ -570,30 +610,6 @@ var svgWorldMap = (function() {
         selectedCountry = country; // New selected
         resetOldSelected(selectedOld); // Reset selectedOld
         callBack('click', country);
-        // Criando uma div para a janela transparente
-        const transparentWindow = document.createElement('div');
-        
-        // Definindo estilos para a janela transparente
-        transparentWindow.style.position = 'fixed';
-        transparentWindow.style.top = '50%';
-        transparentWindow.style.left = '50%';
-        transparentWindow.style.transform = 'translate(-50%, -50%)';
-        transparentWindow.style.width = '30%';
-        transparentWindow.style.height = '30%';
-        transparentWindow.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
-        transparentWindow.style.border = '1px solid black';
-        transparentWindow.style.borderRadius = '5px';
-        transparentWindow.style.padding = '20px';
-        transparentWindow.style.boxSizing = 'border-box';
-        transparentWindow.style.overflow = 'auto';
-        
-        // Adicionando texto à janela
-        const textElement = document.createElement('p');
-        textElement.textContent = 'Texto de exemplo na janela transparente.';
-        transparentWindow.appendChild(textElement);
-        
-        // Adicionando a janela à body
-        document.body.appendChild(transparentWindow);
     }
 
     // Reset all colors and fills, function defined in 'svgMap.resetMap' 
@@ -996,32 +1012,262 @@ var svgWorldMap = (function() {
 
     // Fallback for countryData if no other is passed
     var countryData = { 
-        "AD": { "name": "Andorra", "region": "EU" }, "AE": { "name": "United Arab Emirates", "region": "AS" }, "AF": { "name": "Afghanistan", "region": "AS" }, "AG": { "name": "Antigua and Barbuda", "region": "NA" }, "AI": { "name": "Anguilla", "region": "NA" }, "AL": { "name": "Albania", "region": "EU" }, "AM": { "name": "Armenia", "region": "AS" }, "AO": { "name": "Angola", "region": "AF" }, "AQ": { "name": "Antarctica", "region": "AN" }, "AR": { "name": "Argentina", "region": "SA" }, "AS": { "name": "American Samoa", "region": "OC" }, "AT": { "name": "Austria", "region": "EU" }, "AU": { "name": "Australia", "region": "OC" }, "AW": { "name": "Aruba", "region": "SA" }, "AX": { "name": "Åland Islands", "region": "EU" }, "AZ": { "name": "Azerbaijan", "region": "AS" }, 
-        "BA": { "name": "Bosnia and Herzegovina", "region": "EU" }, "BB": { "name": "Barbados", "region": "SA" }, "BD": { "name": "Bangladesh", "region": "AS" }, "BE": { "name": "Belgium", "region": "EU" }, "BF": { "name": "Burkina Faso", "region": "AF" }, "BG": { "name": "Bulgaria", "region": "EU" }, "BH": { "name": "Bahrain", "region": "AS" }, "BI": { "name": "Burundi", "region": "AF" }, "BJ": { "name": "Benin", "region": "AF" }, "BL": { "name": "Saint Barthélemy", "region": "NA" }, "BM": { "name": "Bermuda", "region": "NA" }, "BN": { "name": "Brunei", "region": "AS" }, "BO": { "name": "Bolivia", "region": "SA" }, "BQ": { "name": "Bonaire, Sint Eustatius and Saba", "region": "SA" }, "BR": { "name": "Brazil", "region": "SA" }, "BS": { "name": "Bahamas", "region": "NA" }, "BT": { "name": "Bhutan", "region": "AS" }, "BV": { "name": "Bouvet Island", "region": "AN" }, "BW": { "name": "Botswana", "region": "AF" }, "BY": { "name": "Belarus", "region": "EU" }, "BZ": { "name": "Belize", "region": "NA" }, 
-        "CA": { "name": "Canada", "region": "NA" }, "CC": { "name": "Cocos (Keeling) Islands", "region": "AS" }, "CD": { "name": "Congo (Dem. Rep.)", "altnames": "Democratic Republic of the Congo,DR Congo", "region": "AF" }, "CF": { "name": "Central African Republic", "region": "AF" }, "CG": { "name": "Congo", "altnames": "Republic of the Congo", "region": "AF" }, "CH": { "name": "Switzerland", "region": "EU" }, "CI": { "name": "Côte d'Ivoire", "altnames": "Ivory Coast", "region": "AF" }, "CK": { "name": "Cook Islands", "region": "OC" }, "CL": { "name": "Chile", "region": "SA" }, "CM": { "name": "Cameroon", "region": "AF" }, "CN": { "name": "China", "region": "AS" }, "CO": { "name": "Colombia", "region": "SA" }, "CR": { "name": "Costa Rica", "region": "NA" }, "CU": { "name": "Cuba", "region": "NA" }, "CV": { "name": "Cabo Verde", "altnames": "Cape Verde", "region": "AF" }, "CW": { "name": "Curaçao", "region": "SA" }, "CX": { "name": "Christmas Island", "region": "AS" }, "CY": { "name": "Cyprus", "region": "EU" }, "CZ": { "name": "Czechia", "altnames": "Czech Republic", "region": "EU" }, 
-        "DE": { "name": "Germany", "region": "EU" }, "DJ": { "name": "Djibouti", "region": "AF" }, "DK": { "name": "Denmark", "region": "EU" }, "DM": { "name": "Dominica", "region": "NA" }, "DO": { "name": "Dominican Republic", "region": "NA" }, "DZ": { "name": "Algeria", "region": "AF" }, 
-        "EC": { "name": "Ecuador", "region": "SA" }, "EE": { "name": "Estonia", "region": "EU" }, "EG": { "name": "Egypt", "region": "AF" }, "EH": { "name": "Western Sahara", "altnames": "Sahrawi Arab Democratic Republic", "region": "AF" }, "ER": { "name": "Eritrea", "region": "AF" }, "ES": { "name": "Spain", "region": "EU" }, "ET": { "name": "Ethiopia", "region": "AF" }, 
-        "FI": { "name": "Finland", "region": "EU" }, "FJ": { "name": "Fiji", "region": "OC" }, "FK": { "name": "Falkland Islands", "region": "SA" }, "FM": { "name": "Micronesia", "region": "OC" }, "FO": { "name": "Faroe Islands", "region": "EU" }, "FR": { "name": "France", "region": "EU" }, 
-        "GA": { "name": "Gabon", "region": "AF" }, "GB": { "name": "United Kingdom", "region": "EU" }, "GD": { "name": "Grenada", "region": "NA" }, "GE": { "name": "Georgia", "region": "AS" }, "GF": { "name": "French Guiana", "region": "SA" }, "GG": { "name": "Guernsey", "region": "EU" }, "GH": { "name": "Ghana", "region": "AF" }, "GI": { "name": "Gibraltar", "region": "EU" }, "GL": { "name": "Greenland", "region": "NA" }, "GM": { "name": "Gambia", "region": "AF" }, "GN": { "name": "Guinea", "region": "AF" }, "GP": { "name": "Guadeloupe", "region": "NA" }, "GQ": { "name": "Equatorial Guinea", "region": "AF" }, "GR": { "name": "Greece", "region": "EU" }, "GS": { "name": "South Georgia and the South Sandwich Islands", "region": "AN" }, "GT": { "name": "Guatemala", "region": "NA" }, "GU": { "name": "Guam", "region": "OC" }, "GW": { "name": "Guinea-Bissau", "region": "AF" }, "GY": { "name": "Guyana", "region": "SA" }, 
-        "HK": { "name": "Hong Kong", "region": "AS" }, "HM": { "name": "Heard Island and McDonald Islands", "region": "AN" }, "HN": { "name": "Honduras", "region": "NA" }, "HR": { "name": "Croatia", "region": "EU" }, "HT": { "name": "Haiti", "region": "NA" }, "HU": { "name": "Hungary", "region": "EU" }, 
-        "ID": { "name": "Indonesia", "region": "AS" }, "IE": { "name": "Ireland", "region": "EU" }, "IL": { "name": "Israel", "region": "AS" }, "IM": { "name": "Isle of Man", "region": "EU" }, "IN": { "name": "India", "region": "AS" }, "IO": { "name": "British Indian Ocean Territory", "region": "AS" }, "IQ": { "name": "Iraq", "region": "AS" }, "IR": { "name": "Iran", "region": "AS" }, "IS": { "name": "Iceland", "region": "EU" }, "IT": { "name": "Italy", "region": "EU" }, 
-        "JE": { "name": "Jersey", "region": "EU" }, "JM": { "name": "Jamaica", "region": "NA" }, "JO": { "name": "Jordan", "region": "AS" }, "JP": { "name": "Japan", "region": "AS" }, 
-        "KE": { "name": "Kenya", "region": "AF" }, "KG": { "name": "Kyrgyzstan", "region": "AS" }, "KH": { "name": "Cambodia", "region": "AS" }, "KI": { "name": "Kiribati", "region": "OC" }, "KM": { "name": "Comoros", "region": "AF" }, "KN": { "name": "Saint Kitts and Nevis", "region": "NA" }, "KP": { "name": "North Korea", "region": "AS" }, "KR": { "name": "South Korea", "region": "AS" }, "KW": { "name": "Kuwait", "region": "AS" }, "KY": { "name": "Cayman Islands", "region": "NA" }, "KZ": { "name": "Kazakhstan", "region": "AS" }, 
-        "LA": { "name": "Laos", "region": "AS" }, "LB": { "name": "Lebanon", "region": "AS" }, "LC": { "name": "Saint Lucia", "region": "NA" }, "LI": { "name": "Liechtenstein", "region": "EU" }, "LK": { "name": "Sri Lanka", "region": "AS" }, "LR": { "name": "Liberia", "region": "AF" }, "LS": { "name": "Lesotho", "region": "AF" }, "LT": { "name": "Lithuania", "region": "EU" }, "LU": { "name": "Luxembourg", "region": "EU" }, "LV": { "name": "Latvia", "region": "EU" }, "LY": { "name": "Libya", "region": "AF" }, 
-        "MA": { "name": "Morocco", "region": "AF" }, "MC": { "name": "Monaco", "region": "EU" }, "MD": { "name": "Moldova", "region": "EU" }, "ME": { "name": "Montenegro", "region": "EU" }, "MF": { "name": "Saint Martin (French part)", "region": "NA" }, "MG": { "name": "Madagascar", "region": "AF" }, "MH": { "name": "Marshall Islands", "region": "OC" }, "MK": { "name": "North Macedonia", "region": "EU" }, "ML": { "name": "Mali", "region": "AF" }, "MM": { "name": "Myanmar", "region": "AS" }, "MN": { "name": "Mongolia", "region": "AS" }, "MO": { "name": "Macao", "region": "AS" }, "MP": { "name": "Northern Mariana Islands", "region": "AS" }, "MQ": { "name": "Martinique", "region": "NA" }, "MR": { "name": "Mauritania", "region": "AF" }, "MS": { "name": "Montserrat", "region": "NA" }, "MT": { "name": "Malta", "region": "EU" }, "MU": { "name": "Mauritius", "region": "AF" }, "MV": { "name": "Maldives", "region": "AS" }, "MW": { "name": "Malawi", "region": "AF" }, "MX": { "name": "Mexico", "region": "NA" }, "MY": { "name": "Malaysia", "region": "AS" }, "MZ": { "name": "Mozambique", "region": "AF" }, 
-        "NA": { "name": "Namibia", "region": "AF" }, "NC": { "name": "New Caledonia", "region": "OC" }, "NE": { "name": "Niger", "region": "AF" }, "NF": { "name": "Norfolk Island", "region": "OC" }, "NG": { "name": "Nigeria", "region": "AF" }, "NI": { "name": "Nicaragua", "region": "NA" }, "NL": { "name": "Netherlands", "region": "EU" }, "NO": { "name": "Norway", "region": "EU" }, "NP": { "name": "Nepal", "region": "AS" }, "NR": { "name": "Nauru", "region": "OC" }, "NU": { "name": "Niue", "region": "OC" }, "NZ": { "name": "New Zealand", "region": "OC" }, 
-        "OM": { "name": "Oman", "region": "AS" }, 
-        "PA": { "name": "Panama", "region": "NA" }, "PE": { "name": "Peru", "region": "SA" }, "PF": { "name": "French Polynesia", "region": "OC" }, "PG": { "name": "Papua New Guinea", "region": "OC" }, "PH": { "name": "Philippines", "region": "AS" }, "PK": { "name": "Pakistan", "region": "AS" }, "PL": { "name": "Poland", "region": "EU" }, "PM": { "name": "Saint Pierre and Miquelon", "region": "NA" }, "PN": { "name": "Pitcairn", "region": "OC" }, "PR": { "name": "Puerto Rico", "region": "NA" }, "PS": { "name": "Palestine", "altnames": "State of Palestine", "region": "AS" }, "PT": { "name": "Portugal", "region": "EU" }, "PW": { "name": "Palau", "region": "OC" }, "PY": { "name": "Paraguay", "region": "SA" }, 
-        "QA": { "name": "Qatar", "region": "AS" }, 
-        "RE": { "name": "Réunion", "region": "AF" }, "RO": { "name": "Romania", "region": "EU" }, "RS": { "name": "Serbia", "region": "EU" }, "RU": { "name": "Russia", "region": "EU" }, "RW": { "name": "Rwanda", "region": "AF" }, 
-        "SA": { "name": "Saudi Arabia", "region": "AS" }, "SB": { "name": "Solomon Islands", "region": "OC" }, "SC": { "name": "Seychelles", "region": "AF" }, "SD": { "name": "Sudan", "region": "AF" }, "SE": { "name": "Sweden", "region": "EU" }, "SG": { "name": "Singapore", "region": "AS" }, "SH": { "name": "Saint Helena, Ascension and Tristan da Cunha", "region": "AF" }, "SI": { "name": "Slovenia", "region": "EU" }, "SJ": { "name": "Svalbard and Jan Mayen", "region": "EU" }, "SK": { "name": "Slovakia", "region": "EU" }, "SL": { "name": "Sierra Leone", "region": "AF" }, "SM": { "name": "San Marino", "region": "EU" }, "SN": { "name": "Senegal", "region": "AF" }, "SO": { "name": "Somalia", "region": "AF" }, "SR": { "name": "Suriname", "region": "SA" }, "SS": { "name": "South Sudan", "region": "AF" }, "ST": { "name": "Sao Tome and Principe", "altnames": "São Tomé and Príncipe", "region": "AF" }, "SV": { "name": "El Salvador", "region": "NA" }, "SX": { "name": "Sint Maarten (Dutch part)", "region": "NA" }, "SY": { "name": "Syria", "altnames": "Syrian Arab Republic", "region": "AS" }, "SZ": { "name": "Eswatini", "altnames": "Swaziland", "region": "AF" }, 
-        "TC": { "name": "Turks and Caicos Islands", "region": "NA" }, "TD": { "name": "Chad", "region": "AF" }, "TF": { "name": "French Southern Territories", "region": "AF" }, "TG": { "name": "Togo", "region": "AF" }, "TH": { "name": "Thailand", "region": "AS" }, "TJ": { "name": "Tajikistan", "region": "AS" }, "TK": { "name": "Tokelau", "region": "OC" }, "TL": { "name": "Timor-Leste (East Timor)", "region": "AS" }, "TM": { "name": "Turkmenistan", "region": "AS" }, "TN": { "name": "Tunisia", "region": "AF" }, "TO": { "name": "Tonga", "region": "AF" }, "TR": { "name": "Turkey", "region": "AS" }, "TT": { "name": "Trinidad and Tobago", "region": "NA" }, "TV": { "name": "Tuvalu", "region": "OC" }, "TW": { "name": "Taiwan", "region": "AS" }, "TZ": { "name": "Tanzania", "region": "AF" }, 
-        "UA": { "name": "Ukraine", "region": "EU" }, "UG": { "name": "Uganda", "region": "AF" }, "UM": { "name": "United States Minor Outlying Islands", "region": "OC" }, "US": { "name": "United States", "region": "NA" }, "UY": { "name": "Uruguay", "region": "SA" }, "UZ": { "name": "Uzbekistan", "region": "AS" }, 
-        "VA": { "name": "Holy See", "region": "EU" }, "VC": { "name": "Saint Vincent and the Grenadines", "region": "NA" }, "VE": { "name": "Venezuela", "region": "SA" }, "VG": { "name": "Virgin Islands (British)", "region": "NA" }, "VI": { "name": "Virgin Islands (U.S.)", "region": "NA" }, "VN": { "name": "Viet Nam", "altnames": "Vietnam", "region": "AS" }, "VU": { "name": "Vanuatu", "region": "OC" }, 
-        "WF": { "name": "Wallis and Futuna", "region": "OC" }, "WS": { "name": "Samoa", "region": "OC" }, 
-        "XK": { "name": "Kosovo", "region": "EU" }, 
-        "YE": { "name": "Yemen", "region": "AS" }, "YT": { "name": "Mayotte", "region": "AF" }, 
-        "ZA": { "name": "South Africa", "region": "AF" }, "ZM": { "name": "Zambia", "region": "AF" }, "ZW": { "name": "Zimbabwe", "region": "AF" }
+        "AD": { "name": "Andorra", "region": "EU", "population": "77,355", "GDP": "$3.24 billion" },
+        "AE": { "name": "Emirados Árabes Unidos", "region": "AS", "population": "9.9 million", "GDP": "$421.14 billion" },
+        "AF": { "name": "Afeganistão", "region": "AS", "population": "38.93 million", "GDP": "$19.29 billion" },
+        "AG": { "name": "Antígua e Barbuda", "region": "NA", "population": "97,929", "GDP": "$1.69 billion" },
+        "AI": { "name": "Anguila", "region": "NA", "population": "15,003", "GDP": "$337.8 million" },
+        "AL": { "name": "Albânia", "region": "EU", "population": "2.87 million", "GDP": "$15.29 billion" },
+        "AM": { "name": "Armênia", "region": "AS", "population": "2.97 million", "GDP": "$13.03 billion" },
+        "AO": { "name": "Angola", "region": "AF", "population": "32.87 million", "GDP": "$88.38 billion" },
+        "AQ": { "name": "Antártida", "region": "AN", "population": "Não aplicável", "GDP": "Não aplicável" },
+        "AR": { "name": "Argentina", "region": "SA", "population": "45.92 million", "GDP": "$385.5 billion" },
+        "AS": { "name": "Samoa Americana", "region": "OC", "population": "55,312", "GDP": "$658 million" },
+        "AT": { "name": "Áustria", "region": "EU", "population": "8.79 million", "GDP": "$477.7 billion" },
+        "AU": { "name": "Austrália", "region": "OC", "population": "25.78 million", "GDP": "$1.37 trillion" },
+        "AW": { "name": "Aruba", "region": "SA", "population": "107,195", "GDP": "$2.52 billion" },
+        "AX": { "name": "Ilhas Åland", "region": "EU", "population": "29,489", "GDP": "$1.52 billion" },
+        "AZ": { "name": "Azerbaijão", "region": "AS", "population": "10.08 million", "GDP": "$46.27 billion" },
+        "BA": { "name": "Bósnia e Herzegovina", "region": "EU", "population": "3.27 million", "GDP": "$20.92 billion" },
+        "BB": { "name": "Barbados", "region": "SA", "population": "287,711", "GDP": "$5.04 billion" },
+        "BD": { "name": "Bangladesh", "region": "AS", "population": "166.37 million", "GDP": "$352.4 billion" },
+        "BE": { "name": "Bélgica", "region": "EU", "population": "11.48 million", "GDP": "$540.3 billion" },
+        "BF": { "name": "Burkina Faso", "region": "AF", "population": "21.51 million", "GDP": "$16.85 billion" },
+        "BG": { "name": "Bulgária", "region": "EU", "population": "6.91 million", "GDP": "$67.24 billion" },
+        "BH": { "name": "Bahrein", "region": "AS", "population": "1.74 million", "GDP": "$37.92 billion" },
+        "BI": { "name": "Burundi", "region": "AF", "population": "12.31 million", "GDP": "$3.24 billion" },
+        "BJ": { "name": "Benin", "region": "AF", "population": "12.12 million", "GDP": "$12.16 billion" },
+        "BL": { "name": "São Bartolomeu", "region": "NA", "population": "9,877", "GDP": "$286.8 million" },
+        "BM": { "name": "Bermudas", "region": "NA", "population": "62,506", "GDP": "$7.56 billion" },
+        "BN": { "name": "Brunei", "region": "AS", "population": "433,285", "GDP": "$13.17 billion" },
+        "BO": { "name": "Bolívia", "region": "SA", "population": "11.51 million", "GDP": "$44.06 billion" },
+        "BQ": { "name": "Bonaire, Santo Eustáquio e Saba", "region": "SA", "population": "20,320", "GDP": "$506 million" },
+        "BR": { "name": "Brasil", "region": "SA", "population": "213.99 million", "GDP": "$2.14 trillion" },
+        "BS": { "name": "Bahamas", "region": "NA", "population": "396,913", "GDP": "$12.14 billion" },
+        "BT": { "name": "Butão", "region": "AS", "population": "791,919", "GDP": "$2.77 billion" },
+        "BV": { "name": "Ilha Bouvet", "region": "AN", "population": "Não aplicável", "GDP": "Não aplicável" },
+        "BW": { "name": "Botsuana", "region": "AF", "population": "2.35 million", "GDP": "$16.88 billion" },
+        "BY": { "name": "Bielorrússia", "region": "EU", "population": "9.39 million", "GDP": "$60.29 billion" },
+        "BZ": { "name": "Belize", "region": "NA", "population": "408,487", "GDP": "$1.87 billion" },
+
+        "CA": { "name": "Canadá", "region": "NA", "population": "37.59 million", "GDP": "$1.85 trillion" },
+        "CC": { "name": "Ilhas Cocos (Keeling)", "region": "AS", "population": "596", "GDP": "Não aplicável" },
+        "CD": { "name": "Congo (Rep. Dem.)", "altnames": "República Democrática do Congo", "region": "AF", "population": "112.6 million", "GDP": "$49.47 billion" },
+        "CF": { "name": "República Centro-Africana", "region": "AF", "population": "4.9 million", "GDP": "$2.39 billion" },
+        "CG": { "name": "Congo", "altnames": "República do Congo", "region": "AF", "population": "5.53 million", "GDP": "$8.23 billion" },
+        "CH": { "name": "Suíça", "region": "EU", "population": "8.69 million", "GDP": "$703.08 billion" },
+        "CI": { "name": "Costa do Marfim", "region": "AF", "population": "26.38 million", "GDP": "$52.25 billion" },
+        "CK": { "name": "Ilhas Cook", "region": "OC", "population": "17,564", "GDP": "$317 million" },
+        "CL": { "name": "Chile", "region": "SA", "population": "19.52 million", "GDP": "$281.1 billion" },
+        "CM": { "name": "Camarões", "region": "AF", "population": "27.64 million", "GDP": "$39.36 billion" },
+        "CN": { "name": "China", "region": "AS", "population": "1.4 billion", "GDP": "$16.64 trillion" },
+        "CO": { "name": "Colômbia", "region": "SA", "population": "50.34 million", "GDP": "$333.8 billion" },
+        "CR": { "name": "Costa Rica", "region": "NA", "population": "5.15 million", "GDP": "$61.79 billion" },
+        "CU": { "name": "Cuba", "region": "NA", "population": "11.33 million", "GDP": "$97.2 billion" },
+        "CV": { "name": "Cabo Verde", "region": "AF", "population": "556,000", "GDP": "$2.02 billion" },
+        "CW": { "name": "Curaçao", "region": "SA", "population": "164,093", "GDP": "$3.09 billion" },
+        "CX": { "name": "Ilha Christmas", "region": "AS", "population": "2,205", "GDP": "Não aplicável" },
+        "CY": { "name": "Chipre", "region": "EU", "population": "1.21 million", "GDP": "$24.27 billion" },
+        "CZ": { "name": "República Tcheca", "region": "EU", "population": "10.71 million", "GDP": "$245.2 billion" },
+
+        "DE": { "name": "Alemanha", "region": "EU", "population": "83.02 million", "GDP": "$4.24 trillion" },
+        "DJ": { "name": "Djibuti", "region": "AF", "population": "1.03 million", "GDP": "$2.05 billion" },
+        "DK": { "name": "Dinamarca", "region": "EU", "population": "5.85 million", "GDP": "$370.9 billion" },
+        "DM": { "name": "Dominica", "region": "NA", "population": "71,625", "GDP": "$562 million" },
+        "DO": { "name": "República Dominicana", "region": "NA", "population": "10.97 million", "GDP": "$91.05 billion" },
+        "DZ": { "name": "Argélia", "region": "AF", "population": "44.63 million", "GDP": "$170.35 billion" },
+        "EC": { "name": "Equador", "region": "SA", "population": "17.65 million", "GDP": "$109.48 billion" },
+        "EE": { "name": "Estônia", "region": "EU", "population": "1.32 million", "GDP": "$35.75 billion" },
+        "EG": { "name": "Egito", "region": "AF", "population": "104.26 million", "GDP": "$394.28 billion" },
+        "EH": { "name": "Saara Ocidental", "altnames": "República Árabe Saaraui Democrática", "region": "AF", "population": "Não aplicável", "GDP": "Não aplicável" },
+        "ER": { "name": "Eritreia", "region": "AF", "population": "3.5 million", "GDP": "$2.8 billion" },
+        "ES": { "name": "Espanha", "region": "EU", "population": "46.94 million", "GDP": "$1.4 trillion" },
+        "ET": { "name": "Etiópia", "region": "AF", "population": "120 million", "GDP": "$96.12 billion" },
+        "FI": { "name": "Finlândia", "region": "EU", "population": "5.54 million", "GDP": "$306.94 billion" },
+        "FJ": { "name": "Fiji", "region": "OC", "population": "896,444", "GDP": "$5.72 billion" },
+        "FK": { "name": "Ilhas Malvinas", "region": "SA", "population": "2,910", "GDP": "$164.5 million" },
+        "FM": { "name": "Micronésia", "region": "OC", "population": "105,544", "GDP": "$371 million" },
+        "FO": { "name": "Ilhas Faroe", "region": "EU", "population": "49,290", "GDP": "$3.23 billion" },
+        "FR": { "name": "França", "region": "EU", "population": "67.06 million", "GDP": "$3.06 trillion" },
+        
+        "GA": { "name": "Gabão", "region": "AF", "population": "2.29 million", "GDP": "$17.94 billion" },
+        "GB": { "name": "Reino Unido", "region": "EU", "population": "67.44 million", "GDP": "$3.12 trillion" },
+        "GD": { "name": "Granada", "region": "NA", "population": "112,003", "GDP": "$1.38 billion" },
+        "GE": { "name": "Geórgia", "region": "AS", "population": "3.72 million", "GDP": "$17.85 billion" },
+        "GF": { "name": "Guiana Francesa", "region": "SA", "population": "298,682", "GDP": "$5.5 billion" },
+        "GG": { "name": "Guernsey", "region": "EU", "population": "67,052", "GDP": "$3.15 billion" },
+        "GH": { "name": "Gana", "region": "AF", "population": "31.07 million", "GDP": "$71.18 billion" },
+        "GI": { "name": "Gibraltar", "region": "EU", "population": "33,701", "GDP": "$2.93 billion" },
+        "GL": { "name": "Groenlândia", "region": "NA", "population": "56,672", "GDP": "$2.72 billion" },
+        "GM": { "name": "Gâmbia", "region": "AF", "population": "2.42 million", "GDP": "$1.49 billion" },
+        "GN": { "name": "Guiné", "region": "AF", "population": "13.13 million", "GDP": "$10.05 billion" },
+        "GP": { "name": "Guadalupe", "region": "NA", "population": "395,700", "GDP": "$9.14 billion" },
+        "GQ": { "name": "Guiné Equatorial", "region": "AF", "population": "1.4 million", "GDP": "$12.38 billion" },
+        "GR": { "name": "Grécia", "region": "EU", "population": "10.42 million", "GDP": "$209.85 billion" },
+        "GS": { "name": "Geórgia do Sul e Ilhas Sandwich do Sul", "region": "AN", "population": "30", "GDP": "Não aplicável" },
+        "GT": { "name": "Guatemala", "region": "NA", "population": "17.92 million", "GDP": "$85.47 billion" },
+        "GU": { "name": "Guam", "region": "OC", "population": "167,294", "GDP": "$5.85 billion" },
+        "GW": { "name": "Guiné-Bissau", "region": "AF", "population": "2.03 million", "GDP": "$1.5 billion" },
+        "GY": { "name": "Guiana", "region": "SA", "population": "786,552", "GDP": "$3.63 billion" },
+        "HK": { "name": "Hong Kong", "region": "AS", "population": "7.55 million", "GDP": "$383.4 billion" },
+        "HM": { "name": "Ilha Heard e Ilhas McDonald", "region": "AN", "population": "Não aplicável", "GDP": "Não aplicável" },
+        "HN": { "name": "Honduras", "region": "NA", "population": "9.75 million", "GDP": "$26.72 billion" },
+        "HR": { "name": "Croácia", "region": "EU", "population": "4.05 million", "GDP": "$60.26 billion" },
+        "HT": { "name": "Haiti", "region": "NA", "population": "11.4 million", "GDP": "$8.7 billion" },
+        "HU": { "name": "Hungria", "region": "EU", "population": "9.65 million", "GDP": "$171.14 billion" },
+        "ID": { "name": "Indonésia", "region": "AS", "population": "276.36 million", "GDP": "$1.12 trillion" },
+        "IE": { "name": "Irlanda", "region": "EU", "population": "4.98 million", "GDP": "$387.89 billion" },
+        "IL": { "name": "Israel", "region": "AS", "population": "9.29 million", "GDP": "$387.7 billion" },
+        "IM": { "name": "Ilha de Man", "region": "EU", "population": "85,033", "GDP": "$7.34 billion" },
+        "IN": { "name": "Índia", "region": "AS", "population": "1.39 billion", "GDP": "$2.91 trillion" },
+        "IO": { "name": "Território Britânico do Oceano Índico", "region": "AS", "population": "3,000", "GDP": "Não aplicável" },
+        "IQ": { "name": "Iraque", "region": "AS", "population": "41.65 million", "GDP": "$192.4 billion" },
+        "IR": { "name": "Irã", "region": "AS", "population": "85.02 million", "GDP": "$445.94 billion" },
+        "IS": { "name": "Islândia", "region": "EU", "population": "343,353", "GDP": "$31.12 billion" },
+        "IT": { "name": "Itália", "region": "EU", "population": "60.36 million", "GDP": "$2.44 trillion" },
+        "JE": { "name": "Jersey", "region": "EU", "population": "108,488", "GDP": "$6.32 billion" },
+        "JM": { "name": "Jamaica", "region": "NA", "population": "2.95 million", "GDP": "$15.82 billion" },
+        "JO": { "name": "Jordânia", "region": "AS", "population": "10.89 million", "GDP": "$46.06 billion" },
+        "JP": { "name": "Japão", "region": "AS", "population": "126.3 million", "GDP": "$5.15 trillion" },
+        "KE": { "name": "Quênia", "region": "AF", "population": "54.89 million", "GDP": "$95.5 billion" },
+        "KG": { "name": "Quirguistão", "region": "AS", "population": "6.66 million", "GDP": "$8.75 billion" },
+        "KH": { "name": "Camboja", "region": "AS", "population": "16.7 million", "GDP": "$29.57 billion" },
+        "KI": { "name": "Quiribati", "region": "OC", "population": "119,449", "GDP": "$197 million" },
+        "KM": { "name": "Comores", "region": "AF", "population": "873,724", "GDP": "$1.36 billion" },
+        "KN": { "name": "São Cristóvão e Neves", "region": "NA", "population": "53,199", "GDP": "$1.04 billion" },
+        "KP": { "name": "Coreia do Norte", "region": "AS", "population": "25.67 million", "GDP": "Não aplicável" },
+        "KR": { "name": "Coreia do Sul", "region": "AS", "population": "51.71 million", "GDP": "$1.63 trillion" },
+        "KW": { "name": "Kuwait", "region": "AS", "population": "4.33 million", "GDP": "$116.38 billion" },
+        "KY": { "name": "Ilhas Cayman", "region": "NA", "population": "66,497", "GDP": "$4.28 billion" },
+        "KZ": { "name": "Cazaquistão", "region": "AS", "population": "19.1 million", "GDP": "$184.7 billion" },
+        
+        "LA": { "name": "Laos", "region": "AS", "population": "7.53 million", "GDP": "$20.56 billion" },
+        "LB": { "name": "Líbano", "region": "AS", "population": "6.85 million", "GDP": "$55.35 billion" },
+        "LC": { "name": "Santa Lúcia", "region": "NA", "population": "184,401", "GDP": "$2.03 billion" },
+        "LI": { "name": "Liechtenstein", "region": "EU", "population": "38,250", "GDP": "$6.83 billion" },
+        "LK": { "name": "Sri Lanka", "region": "AS", "population": "21.41 million", "GDP": "$84.01 billion" },
+        "LR": { "name": "Libéria", "region": "AF", "population": "5.06 million", "GDP": "$3.33 billion" },
+        "LS": { "name": "Lesoto", "region": "AF", "population": "2.14 million", "GDP": "$2.72 billion" },
+        "LT": { "name": "Lituânia", "region": "EU", "population": "2.79 million", "GDP": "$58.07 billion" },
+        "LU": { "name": "Luxemburgo", "region": "EU", "population": "633,120", "GDP": "$74.46 billion" },
+        "LV": { "name": "Letônia", "region": "EU", "population": "1.88 million", "GDP": "$34.3 billion" },
+        "LY": { "name": "Líbia", "region": "AF", "population": "6.92 million", "GDP": "$72.84 billion" },
+        "MA": { "name": "Marrocos", "region": "AF", "population": "37.17 million", "GDP": "$120.42 billion" },
+        "MC": { "name": "Mônaco", "region": "EU", "population": "38,964", "GDP": "$7.67 billion" },
+        "MD": { "name": "Moldávia", "region": "EU", "population": "2.64 million", "GDP": "$12.29 billion" },
+        "ME": { "name": "Montenegro", "region": "EU", "population": "622,218", "GDP": "$5.58 billion" },
+        "MF": { "name": "São Martinho (parte francesa)", "region": "NA", "population": "38,002", "GDP": "$561 million" },
+        "MG": { "name": "Madagáscar", "region": "AF", "population": "28.43 million", "GDP": "$14.12 billion" },
+        "MH": { "name": "Ilhas Marshall", "region": "OC", "population": "59,190", "GDP": "$234 million" },
+        "MK": { "name": "Macedônia do Norte", "region": "EU", "population": "2.08 million", "GDP": "$13.22 billion" },
+        "ML": { "name": "Mali", "region": "AF", "population": "20.25 million", "GDP": "$18.92 billion" },
+        "MM": { "name": "Mianmar", "region": "AS", "population": "54.43 million", "GDP": "$81.59 billion" },
+        "MN": { "name": "Mongólia", "region": "AS", "population": "3.28 million", "GDP": "$13.14 billion" },
+        "MO": { "name": "Macau", "region": "AS", "population": "649,335", "GDP": "$55.47 billion" },
+        "MP": { "name": "Ilhas Marianas do Norte", "region": "AS", "population": "57,216", "GDP": "$1.32 billion" },
+        "MQ": { "name": "Martinica", "region": "NA", "population": "376,480", "GDP": "$9.14 billion" },
+        "MR": { "name": "Mauritânia", "region": "AF", "population": "4.62 million", "GDP": "$7.44 billion" },
+        "MS": { "name": "Montserrat", "region": "NA", "population": "4,989", "GDP": "$63.5 million" },
+        "MT": { "name": "Malta", "region": "EU", "population": "514,564", "GDP": "$16.62 billion" },
+        "MU": { "name": "Maurício", "region": "AF", "population": "1.27 million", "GDP": "$14.28 billion" },
+        "MV": { "name": "Maldivas", "region": "AS", "population": "530,953", "GDP": "$5.64 billion" },
+        "MW": { "name": "Malawi", "region": "AF", "population": "19.13 million", "GDP": "$7.59 billion" },
+        "MX": { "name": "México", "region": "NA", "population": "130.26 million", "GDP": "$1.28 trillion" },
+        "MY": { "name": "Malásia", "region": "AS", "population": "32.73 million", "GDP": "$364.7 billion" },
+        "MZ": { "name": "Moçambique", "region": "AF", "population": "32.47 million", "GDP": "$15.75 billion" },
+        "NA": { "name": "Namíbia", "region": "AF", "population": "2.59 million", "GDP": "$14.47 billion" },
+        "NC": { "name": "Nova Caledônia", "region": "OC", "population": "287,800", "GDP": "$10.5 billion" },
+        "NE": { "name": "Níger", "region": "AF", "population": "25.13 million", "GDP": "$8.11 billion" },
+        "NF": { "name": "Ilha Norfolk", "region": "OC", "population": "2,210", "GDP": "Não aplicável" },
+        "NG": { "name": "Nigéria", "region": "AF", "population": "206.14 million", "GDP": "$448.12 billion" },
+        "NI": { "name": "Nicarágua", "region": "NA", "population": "6.65 million", "GDP": "$14.13 billion" },
+        "NL": { "name": "Países Baixos", "region": "EU", "population": "17.48 million", "GDP": "$987.5 billion" },
+        "NO": { "name": "Noruega", "region": "EU", "population": "5.44 million", "GDP": "$434.75 billion" },
+        "NP": { "name": "Nepal", "region": "AS", "population": "29.71 million", "GDP": "$30.69 billion" },
+        "NR": { "name": "Nauru", "region": "OC", "population": "10,824", "GDP": "$114 million" },
+        "NU": { "name": "Niue", "region": "OC", "population": "1,618", "GDP": "Não aplicável" },
+        "NZ": { "name": "Nova Zelândia", "region": "OC", "population": "4.92 million", "GDP": "$231.82 billion" },
+        "OM": { "name": "Omã", "region": "AS", "population": "4.97 million", "GDP": "$61.82 billion" },
+        
+        "PA": { "name": "Panamá", "region": "NA", "population": "4.42 million", "GDP": "$68.73 billion" },
+        "PE": { "name": "Peru", "region": "SA", "population": "33.12 million", "GDP": "$229.61 billion" },
+        "PF": { "name": "Polinésia Francesa", "region": "OC", "population": "280,600", "GDP": "$6.49 billion" },
+        "PG": { "name": "Papua-Nova Guiné", "region": "OC", "population": "9.17 million", "GDP": "$26.89 billion" },
+        "PH": { "name": "Filipinas", "region": "AS", "population": "111.05 million", "GDP": "$376.8 billion" },
+        "PK": { "name": "Paquistão", "region": "AS", "population": "225.20 million", "GDP": "$278.22 billion" },
+        "PL": { "name": "Polônia", "region": "EU", "population": "37.97 million", "GDP": "$614.19 billion" },
+        "PM": { "name": "Saint Pierre e Miquelon", "region": "NA", "population": "5,795", "GDP": "Não aplicável" },
+        "PN": { "name": "Pitcairn", "region": "OC", "population": "47", "GDP": "Não aplicável" },
+        "PR": { "name": "Porto Rico", "region": "NA", "population": "2.82 million", "GDP": "$104.99 billion" },
+        "PS": { "name": "Palestina", "region": "AS", "population": "5.10 million", "GDP": "$14.50 billion" },
+        "PT": { "name": "Portugal", "region": "EU", "population": "10.28 million", "GDP": "$237.05 billion" },
+        "PW": { "name": "Palau", "region": "OC", "population": "18,008", "GDP": "$311 million" },
+        "PY": { "name": "Paraguai", "region": "SA", "population": "7.53 million", "GDP": "$40.83 billion" },
+        "QA": { "name": "Catar", "region": "AS", "population": "2.78 million", "GDP": "$156.28 billion" },
+        "RE": { "name": "Reunião", "region": "AF", "population": "895,312", "GDP": "$8.96 billion" },
+        "RO": { "name": "Romênia", "region": "EU", "population": "19.05 million", "GDP": "$250.05 billion" },
+        "RS": { "name": "Sérvia", "region": "EU", "population": "6.91 million", "GDP": "$52.91 billion" },
+        "RU": { "name": "Rússia", "region": "EU", "population": "144.48 million", "GDP": "$1.72 trillion" },
+        "RW": { "name": "Ruanda", "region": "AF", "population": "12.63 million", "GDP": "$10.52 billion" },
+        "SA": { "name": "Arábia Saudita", "region": "AS", "population": "35.41 million", "GDP": "$793.97 billion" },
+        "SB": { "name": "Ilhas Salomão", "region": "OC", "population": "703,996", "GDP": "$1.42 billion" },
+        "SC": { "name": "Seicheles", "region": "AF", "population": "98,347", "GDP": "$1.81 billion" },
+        "SD": { "name": "Sudão", "region": "AF", "population": "44.91 million", "GDP": "$35.47 billion" },
+        "SE": { "name": "Suécia", "region": "EU", "population": "10.45 million", "GDP": "$530.00 billion" },
+        "SG": { "name": "Cingapura", "region": "AS", "population": "5.91 million", "GDP": "$372.06 billion" },
+        "SH": { "name": "Santa Helena, Ascensão e Tristão da Cunha", "region": "AF", "population": "6,077", "GDP": "Não aplicável" },
+        "SI": { "name": "Eslovênia", "region": "EU", "population": "2.08 million", "GDP": "$65.78 billion" },
+        "SJ": { "name": "Svalbard e Jan Mayen", "region": "EU", "population": "2,667", "GDP": "Não aplicável" },
+        "SK": { "name": "Eslováquia", "region": "EU", "population": "5.46 million", "GDP": "$107.08 billion" },
+        "SL": { "name": "Serra Leoa", "region": "AF", "population": "8.16 million", "GDP": "$3.79 billion" },
+        "SM": { "name": "San Marino", "region": "EU", "population": "33,860", "GDP": "$2.21 billion" },
+        "SN": { "name": "Senegal", "region": "AF", "population": "17.91 million", "GDP": "$25.29 billion" },
+        "SO": { "name": "Somália", "region": "AF", "population": "16.64 million", "GDP": "Não disponível" },
+        "SR": { "name": "Suriname", "region": "SA", "population": "591,800", "GDP": "$3.71 billion" },
+        "SS": { "name": "Sudão do Sul", "region": "AF", "population": "11.06 million", "GDP": "$3.63 billion" },
+        "ST": { "name": "São Tomé e Príncipe", "region": "AF", "population": "221,415", "GDP": "$444 million" },
+        "SV": { "name": "El Salvador", "region": "NA", "population": "6.52 million", "GDP": "$27.24 billion" },
+        "SX": { "name": "São Martinho (parte holandesa)", "region": "NA", "population": "42,106", "GDP": "Não aplicável" },
+        "SY": { "name": "Síria", "region": "AS", "population": "17.10 million", "GDP": "$15.40 billion" },
+        "SZ": { "name": "Eswatini", "region": "AF", "population": "1.16 million", "GDP": "$5.77 billion" },        
+
+        "TC": { "name": "Ilhas Turks e Caicos", "region": "NA", "population": "38,191", "GDP": "Não aplicável" },
+        "TD": { "name": "Chade", "region": "AF", "population": "16.66 million", "GDP": "$15.84 billion" },
+        "TF": { "name": "Territórios Franceses do Sul", "region": "AF", "population": "140", "GDP": "Não aplicável" },
+        "TG": { "name": "Togo", "region": "AF", "population": "8.68 million", "GDP": "$5.45 billion" },
+        "TH": { "name": "Tailândia", "region": "AS", "population": "69.80 million", "GDP": "$543.65 billion" },
+        "TJ": { "name": "Tajiquistão", "region": "AS", "population": "9.54 million", "GDP": "$8.05 billion" },
+        "TK": { "name": "Tokelau", "region": "OC", "population": "1,499", "GDP": "Não aplicável" },
+        "TL": { "name": "Timor-Leste (Timor-Leste)", "region": "AS", "population": "1.36 million", "GDP": "$1.72 billion" },
+        "TM": { "name": "Turcomenistão", "region": "AS", "population": "6.03 million", "GDP": "$42.32 billion" },
+        "TN": { "name": "Tunísia", "region": "AF", "population": "12.21 million", "GDP": "$44.26 billion" },
+        "TO": { "name": "Tonga", "region": "AF", "population": "106,915", "GDP": "$519 million" },
+        "TR": { "name": "Turquia", "region": "AS", "population": "84.34 million", "GDP": "$761.43 billion" },
+        "TT": { "name": "Trinidad e Tobago", "region": "NA", "population": "1.40 million", "GDP": "$21.21 billion" },
+        "TV": { "name": "Tuvalu", "region": "OC", "population": "11,931", "GDP": "$46 million" },
+        "TW": { "name": "Taiwan", "region": "AS", "population": "23.58 million", "GDP": "$665.77 billion" },
+        "TZ": { "name": "Tanzânia", "region": "AF", "population": "61.50 million", "GDP": "$63.20 billion" },
+        "UA": { "name": "Ucrânia", "region": "EU", "population": "41.61 million", "GDP": "$166.97 billion" },
+        "UG": { "name": "Uganda", "region": "AF", "population": "47.73 million", "GDP": "$34.97 billion" },
+        "UM": { "name": "Ilhas Menores Distantes dos Estados Unidos", "region": "OC", "population": "300", "GDP": "Não aplicável" },
+        "US": { "name": "Estados Unidos", "region": "NA", "population": "332.47 million", "GDP": "$22.67 trillion" },
+        "UY": { "name": "Uruguai", "region": "SA", "population": "3.48 million", "GDP": "$55.89 billion" },
+        "UZ": { "name": "Uzbequistão", "region": "AS", "population": "34.40 million", "GDP": "$57.84 billion" },
+        "VA": { "name": "Cidade do Vaticano", "region": "EU", "population": "800", "GDP": "Não aplicável" },
+        "VC": { "name": "São Vicente e Granadinas", "region": "NA", "population": "110,608", "GDP": "$0.88 billion" },
+        "VE": { "name": "Venezuela", "region": "SA", "population": "28.67 million", "GDP": "$76.17 billion" },
+        "VG": { "name": "Ilhas Virgens Britânicas", "region": "NA", "population": "30,030", "GDP": "Não aplicável" },
+        "VI": { "name": "Ilhas Virgens Americanas", "region": "NA", "population": "107,268", "GDP": "$4.23 billion" },
+        "VN": { "name": "Vietnã", "region": "AS", "population": "98.97 million", "GDP": "$340.6 billion" },
+        "VU": { "name": "Vanuatu", "region": "OC", "population": "307,145", "GDP": "$0.92 billion" },
+        "WF": { "name": "Wallis e Futuna", "region": "OC", "population": "11,812", "GDP": "Não aplicável" },
+        "WS": { "name": "Samoa", "region": "OC", "population": "199,424", "GDP": "$0.86 billion" },
+        "XK": { "name": "Kosovo", "region": "EU", "population": "1.80 million", "GDP": "$7.98 billion" },
+        "YE": { "name": "Iêmen", "region": "AS", "population": "31.37 million", "GDP": "$28.04 billion" },
+        "YT": { "name": "Mayotte", "region": "AF", "population": "279,471", "GDP": "Não aplicável" },
+        "ZA": { "name": "África do Sul", "region": "AF", "population": "60.52 million", "GDP": "$283.82 billion" },
+        "ZM": { "name": "Zâmbia", "region": "AF", "population": "18.88 million", "GDP": "$26.60 billion" },
+        "ZW": { "name": "Zimbábue", "region": "AF", "population": "14.86 million", "GDP": "$22.34 billion" }
     };
 
     // Global variables for time controls
